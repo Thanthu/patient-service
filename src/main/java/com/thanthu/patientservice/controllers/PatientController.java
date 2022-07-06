@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.dtos.UpdatePasswordDto;
 import com.thanthu.patientservice.services.PatientService;
 import com.thanthu.patientservice.validation.groups.OnCreatePatient;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientDob;
+import com.thanthu.patientservice.validation.groups.OnUpdatePatientEmail;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientName;
 
 import lombok.RequiredArgsConstructor;
@@ -64,6 +66,18 @@ public class PatientController {
 	@GetMapping("/{id}")
 	public PatientDto findPatientById(@PathVariable Long id) {
 		return patientService.findPatientById(id);
+	}
+	
+	@PutMapping("/{id}/email")
+	@Validated(OnUpdatePatientEmail.class)
+	public PatientDto updateEmail(@Valid @RequestBody PatientDto patientDto, @PathVariable Long id) {
+		patientDto.setId(id);
+		return patientService.updateEmail(patientDto);
+	}
+	
+	@PutMapping("/{id}/password")
+	public PatientDto updateEmail(@Valid @RequestBody UpdatePasswordDto updatePasswordDto, @PathVariable Long id) {
+		return patientService.updatePassword(updatePasswordDto, id);
 	}
 
 }

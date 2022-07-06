@@ -1,14 +1,19 @@
 package com.thanthu.patientservice.services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.thanthu.patientservice.converters.PatientDtoToPatientConverter;
 import com.thanthu.patientservice.converters.PatientToPatientDtoConverter;
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.dtos.UpdatePasswordDto;
+import com.thanthu.patientservice.exceptions.BadRequestException;
 import com.thanthu.patientservice.exceptions.NotFoundException;
 import com.thanthu.patientservice.models.Patient;
 import com.thanthu.patientservice.repositories.PatientRepository;
@@ -24,9 +29,16 @@ public class PatientServiceImpl implements PatientService {
 	private final PatientToPatientDtoConverter patientToPatientDtoConverter;
 
 	private final PatientRepository patientRepository;
+	
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public PatientDto createPatient(PatientDto patientDto) {
+		patientRepository.findByEmail(patientDto.getEmail())
+		.ifPresent((patient) -> {
+			throw new BadRequestException("Patient with email '" + patient.getEmail() + "' already exists."); 
+			});
+		
 		Patient patient = patientDtoToPatientConverter.convert(patientDto);
 		Patient savedPatient = savePatient(patient);
 		return patientToPatientDtoConverter.convert(savedPatient);
@@ -82,6 +94,25 @@ public class PatientServiceImpl implements PatientService {
 		Set<PatientDto> patientDtos = patients.stream().map((patient) -> patientToPatientDtoConverter.convert(patient))
 				.collect(Collectors.toSet());
 		return patientDtos;
+	}
+	
+	@Override
+	public PatientDto updateEmail(PatientDto patientDto) {
+		Patient patient = findById(patientDto.getId());
+		patient.setEmail(patientDto.getEmail());
+		Patient savedPatient = savePatient(patient);
+		return patientToPatientDtoConverter.convert(savedPatient);
+	}
+	
+	@Override
+	public PatientDto updatePassword(UpdatePasswordDto updatePasswordDto, Long patientId) {
+		Patient patient = findById(patientId);
+		if (!passwordEncoder.matches(updatePasswordDto.getCurrentPassword(), patient.getPassword())) {
+			throw new AuthenticationServiceException("Invalid password.");
+		}
+		patient.setPassword(passwordEncoder.encode(updatePasswordDto.getNewPassword()));
+		Patient savedPatient = savePatient(patient);
+		return patientToPatientDtoConverter.convert(savedPatient);
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.thanthu.patientservice.converters;
 
+import java.util.stream.Collectors;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ public class PatientToPatientDtoConverter implements Converter<Patient, PatientD
 				.dob(patient.getDob())
 				.createdDateTime(patient.getCreatedDateTime())
 				.updateDateTime(patient.getUpdateDateTime())
+				.email(patient.getEmail())
+				.roles(patient.getRoles().stream().map(role -> role.getRoleName()).collect(Collectors.toSet()))
 				.build();
 	}
 

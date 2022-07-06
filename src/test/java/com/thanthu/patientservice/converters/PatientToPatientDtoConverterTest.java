@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.enums.RoleName;
 import com.thanthu.patientservice.models.Patient;
+import com.thanthu.patientservice.models.Role;
 
 @ExtendWith(MockitoExtension.class)
 class PatientToPatientDtoConverterTest {
@@ -22,6 +27,8 @@ class PatientToPatientDtoConverterTest {
 	private static final String LAST_NAME = "Nair";
 	private static final LocalDate DATE = LocalDate.now();
 	private static final LocalDateTime DATE_TIME = LocalDateTime.now();
+	private static final String EMAIL = "test@test.com";
+	private static final String PASSWORD = "password";
 	
 	private PatientToPatientDtoConverter converter;
 
@@ -32,6 +39,10 @@ class PatientToPatientDtoConverterTest {
 
 	@Test
 	void testConvert() {
+		Role role1 = Role.builder().id(1L).roleName(RoleName.CREATE_PATIENT).build();
+		Role role2 = Role.builder().id(2L).roleName(RoleName.PATIENT).build();
+		Set<Role> roles = Stream.of(role1, role2).collect(Collectors.toSet());
+		
 		Patient patient = Patient.builder()
 				.id(ID)
 				.firstName(FIRST_NAME)
@@ -39,6 +50,9 @@ class PatientToPatientDtoConverterTest {
 				.dob(DATE)
 				.createdDateTime(DATE_TIME)
 				.updateDateTime(DATE_TIME)
+				.email(EMAIL)
+				.password(PASSWORD)
+				.roles(roles)
 				.build();
 		PatientDto patientDto = converter.convert(patient);
 		
@@ -48,7 +62,9 @@ class PatientToPatientDtoConverterTest {
 		assertEquals(DATE, patientDto.getDob());
 		assertEquals(patient.getCreatedDateTime(), patientDto.getCreatedDateTime());
 		assertEquals(patient.getUpdateDateTime(), patientDto.getUpdateDateTime());
-		
+		assertEquals(patient.getEmail(), patientDto.getEmail());
+		assertNull(patientDto.getPassword());
+		assertEquals(2, patientDto.getRoles().size());
 	}
 	
 	@Test
