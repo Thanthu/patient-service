@@ -6,6 +6,7 @@ import javax.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.thanthu.patientservice.dtos.ErrorResponseDto;
+import com.thanthu.patientservice.exceptions.BadRequestException;
 import com.thanthu.patientservice.exceptions.NotFoundException;
 
 import lombok.extern.log4j.Log4j2;
@@ -66,6 +68,20 @@ public class GlobalRestApiExceptionHandler {
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
 	public ErrorResponseDto handler(HttpRequestMethodNotSupportedException e) {
+		log.error(e.getMessage(), e);
+		return ErrorResponseDto.builder().code(400).messages(Arrays.asList(e.getMessage())).build();
+	}
+	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
+	public ErrorResponseDto handler(MethodArgumentNotValidException e) {
+		log.error(e.getMessage(), e);
+		return ErrorResponseDto.builder().code(400).messages(Arrays.asList(e.getFieldError().getField() + " " + e.getFieldError().getDefaultMessage())).build();
+	}
+	
+	@ExceptionHandler(BadRequestException.class)
+	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
+	public ErrorResponseDto handler(BadRequestException e) {
 		log.error(e.getMessage(), e);
 		return ErrorResponseDto.builder().code(400).messages(Arrays.asList(e.getMessage())).build();
 	}
