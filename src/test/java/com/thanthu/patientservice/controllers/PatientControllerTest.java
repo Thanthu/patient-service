@@ -3,9 +3,13 @@ package com.thanthu.patientservice.controllers;
 import static com.thanthu.patientservice.controllers.AbstractRestControllerTest.asJsonString;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -20,27 +24,39 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.dtos.UpdatePasswordDto;
 import com.thanthu.patientservice.exceptions.NotFoundException;
 import com.thanthu.patientservice.services.PatientService;
 
-@WebMvcTest(PatientController.class)
+@SpringBootTest
 class PatientControllerTest {
 	
+	private static final String CREATE_PATIENT_USERNAME = "thanthu@test.com";
+	private static final String CREATE_PATIENT_PASSWORD = "password";
+	private static final String PATIENT_USERNAME = "johndoe@test.com";
+	private static final String PATIENT_PASSWORD = "johnspassword";
+	private static final String EMAIL = "test@test.com";
+	private static final String PASSWORD = "my-password";
 	private static final String API_BASE_URL = "/api/v1/patient";
 	private static final Long ID = 1L;
 	private static final String FIRST_NAME = "Thanthu";
 	private static final String LAST_NAME = "Nair";
 	private static final LocalDate DATE = LocalDate.of(1900, 1, 1);
 	private static final LocalDateTime DATE_TIME = LocalDateTime.now();
+	
+	@Autowired
+    WebApplicationContext webApplicationContext;
+	
 	private PatientDto patientDto;
 
-	@Autowired
 	private MockMvc mockMvc;
 	
 	@MockBean
@@ -48,10 +64,15 @@ class PatientControllerTest {
 	
 	@BeforeEach
 	void setUp() throws Exception {
+		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).apply(springSecurity()).build();
+		
 		patientDto = PatientDto.builder()
 				.firstName(FIRST_NAME)
 				.lastName(LAST_NAME)
-				.dob(DATE).build();
+				.dob(DATE)
+				.email(EMAIL)
+				.password(PASSWORD)
+				.build();
 		
 	}
 
@@ -69,6 +90,8 @@ class PatientControllerTest {
 		when(patientService.createPatient(any(PatientDto.class))).thenReturn(createdPatientDto);
 		
 		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(CREATE_PATIENT_USERNAME, CREATE_PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto))
 				).andExpect(status().isOk())
@@ -87,6 +110,8 @@ class PatientControllerTest {
 		patientDto.setFirstName(null);
 		
 		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(CREATE_PATIENT_USERNAME, CREATE_PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto))
 				).andExpect(status().isBadRequest());
@@ -99,6 +124,8 @@ class PatientControllerTest {
 		patientDto.setLastName(null);
 		
 		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(CREATE_PATIENT_USERNAME, CREATE_PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto))
 				).andExpect(status().isBadRequest());
@@ -111,9 +138,53 @@ class PatientControllerTest {
 		patientDto.setDob(null);
 		
 		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(CREATE_PATIENT_USERNAME, CREATE_PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto))
 				).andExpect(status().isBadRequest());
+		
+		verify(patientService, times(0)).createPatient(any());
+	}
+	
+	@Test
+	void testCreatePatientEmailNull() throws Exception {
+		patientDto.setEmail(null);
+		
+		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(CREATE_PATIENT_USERNAME, CREATE_PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto))
+				).andExpect(status().isBadRequest());
+		
+		verify(patientService, times(0)).createPatient(any());
+	}
+	
+	@Test
+	void testCreatePatientPasswordNull() throws Exception {
+		patientDto.setPassword(null);
+		
+		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(CREATE_PATIENT_USERNAME, CREATE_PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto))
+				).andExpect(status().isBadRequest());
+		
+		verify(patientService, times(0)).createPatient(any());
+	}
+	
+	@Test
+	void testCreatePatientPermission() throws Exception {
+		patientDto.setPassword(null);
+		
+		mockMvc.perform(post(API_BASE_URL)
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto))
+				).andExpect(status().isForbidden());
 		
 		verify(patientService, times(0)).createPatient(any());
 	}
@@ -131,6 +202,7 @@ class PatientControllerTest {
 		when(patientService.getPatients(any())).thenReturn(set);
 		
 		mockMvc.perform(get(API_BASE_URL + "/list-by-ids")
+				.with(httpBasic("johndoe@test.com", "johnspassword"))
 				.contentType(MediaType.APPLICATION_JSON)
 				.param("ids", "1", "2"))
 		.andExpect(status().isOk())
@@ -141,27 +213,19 @@ class PatientControllerTest {
 
 	@Test
 	void testUpdateName() throws Exception {
-		PatientDto updatedPatientDto = PatientDto.builder()
-				.id(ID)
-				.firstName(FIRST_NAME)
-				.lastName(LAST_NAME)
-				.dob(DATE)
-				.createdDateTime(DATE_TIME)
-				.updateDateTime(DATE_TIME)
-				.build();
-		
-		when(patientService.updateName(any())).thenReturn(updatedPatientDto);
+		patientDto.setId(ID);
+		when(patientService.updateName(any())).thenReturn(patientDto);
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/name")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isOk())
 		.andExpect(jsonPath("$.id").value(ID.toString()))
 		.andExpect(jsonPath("$.firstName").value(FIRST_NAME))
 		.andExpect(jsonPath("$.lastName").value(LAST_NAME))
-		.andExpect(jsonPath("$.dob").exists())
-		.andExpect(jsonPath("$.createdDateTime").exists())
-		.andExpect(jsonPath("$.updateDateTime").exists());
+		.andExpect(jsonPath("$.dob").exists());
 		
 		verify(patientService, times(1)).updateName(any());
 	}
@@ -171,6 +235,8 @@ class PatientControllerTest {
 		when(patientService.updateName(any())).thenThrow(new NotFoundException(""));
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/name")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isNotFound());
@@ -183,6 +249,8 @@ class PatientControllerTest {
 		patientDto.setFirstName(null);
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/name")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isBadRequest());
@@ -195,6 +263,8 @@ class PatientControllerTest {
 		patientDto.setLastName(null);
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/name")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isBadRequest());
@@ -204,27 +274,19 @@ class PatientControllerTest {
 
 	@Test
 	void testUpdateDob() throws Exception {
-		PatientDto updatedPatientDto = PatientDto.builder()
-				.id(ID)
-				.firstName(FIRST_NAME)
-				.lastName(LAST_NAME)
-				.dob(DATE)
-				.createdDateTime(DATE_TIME)
-				.updateDateTime(DATE_TIME)
-				.build();
-		
-		when(patientService.updateDob(any())).thenReturn(updatedPatientDto);
+		patientDto.setId(ID);
+		when(patientService.updateDob(any())).thenReturn(patientDto);
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/dob")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.id").value(ID.toString()))
+		.andExpect(jsonPath("$.id").value(ID))
 		.andExpect(jsonPath("$.firstName").value(FIRST_NAME))
 		.andExpect(jsonPath("$.lastName").value(LAST_NAME))
-		.andExpect(jsonPath("$.dob").exists())
-		.andExpect(jsonPath("$.createdDateTime").exists())
-		.andExpect(jsonPath("$.updateDateTime").exists());
+		.andExpect(jsonPath("$.dob").exists());
 		
 		verify(patientService, times(1)).updateDob(any());
 	}
@@ -234,6 +296,8 @@ class PatientControllerTest {
 		when(patientService.updateDob(any())).thenThrow(new NotFoundException(""));
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/dob")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isNotFound());
@@ -246,6 +310,8 @@ class PatientControllerTest {
 		patientDto.setDob(null);
 		
 		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/dob")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(asJsonString(patientDto)))
 		.andExpect(status().isBadRequest());
@@ -266,6 +332,7 @@ class PatientControllerTest {
 		when(patientService.findPatientsByName(any())).thenReturn(set);
 		
 		mockMvc.perform(get(API_BASE_URL + "/list-by-name")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
 				.contentType(MediaType.APPLICATION_JSON)
 				.param("name", "Thanthu"))
 		.andExpect(status().isOk())
@@ -288,6 +355,7 @@ class PatientControllerTest {
 		when(patientService.findPatientById(ID)).thenReturn(createdPatientDto);
 		
 		mockMvc.perform(get(API_BASE_URL + "/" + ID)
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
 				.contentType(MediaType.APPLICATION_JSON)
 				).andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(ID.toString()))
@@ -305,10 +373,98 @@ class PatientControllerTest {
 		when(patientService.findPatientById(any())).thenThrow(new NotFoundException(""));
 		
 		mockMvc.perform(get(API_BASE_URL + "/" + ID)
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
 				.contentType(MediaType.APPLICATION_JSON)
 				).andExpect(status().isNotFound());
 		
 		verify(patientService, times(1)).findPatientById(ID);
+	}
+	
+	@Test
+	void testUpdateEmail() throws Exception {
+		patientDto.setId(ID);
+		when(patientService.updateEmail(any())).thenReturn(patientDto);
+		
+		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/email")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto)))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.id").value(ID.toString()))
+		.andExpect(jsonPath("$.firstName").value(FIRST_NAME))
+		.andExpect(jsonPath("$.lastName").value(LAST_NAME))
+		.andExpect(jsonPath("$.email").value(EMAIL))
+		.andExpect(jsonPath("$.dob").exists());
+		
+		verify(patientService, times(1)).updateEmail(any());
+	}
+	
+	@Test
+	void testUpdateEmailNull() throws Exception {
+		patientDto.setEmail(null);
+		
+		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/email")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto)))
+		.andExpect(status().isBadRequest());
+		
+		verify(patientService, times(0)).updateEmail(any());
+	}
+	
+	@Test
+	void testUpdateEmailBlank() throws Exception {
+		patientDto.setEmail("");
+		
+		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/email")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto)))
+		.andExpect(status().isBadRequest());
+		
+		verify(patientService, times(0)).updateEmail(any());
+	}
+	
+	@Test
+	void testUpdateEmailInvalid() throws Exception {
+		patientDto.setEmail("test");
+		
+		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/email")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(patientDto)))
+		.andExpect(status().isBadRequest());
+		
+		verify(patientService, times(0)).updateEmail(any());
+	}
+	
+	@Test
+	void testUpdatePassword() throws Exception {
+		UpdatePasswordDto updatePasswordDto = UpdatePasswordDto.builder()
+				.currentPassword(PASSWORD)
+				.newPassword("newpassword")
+				.build();
+		patientDto.setId(ID);
+		
+		when(patientService.updatePassword(any(UpdatePasswordDto.class), anyLong())).thenReturn(patientDto);
+		
+		mockMvc.perform(put(API_BASE_URL + "/" + ID + "/password")
+				.with(httpBasic(PATIENT_USERNAME, PATIENT_PASSWORD))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(updatePasswordDto)))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.id").value(ID.toString()))
+		.andExpect(jsonPath("$.firstName").value(FIRST_NAME))
+		.andExpect(jsonPath("$.lastName").value(LAST_NAME))
+		.andExpect(jsonPath("$.email").value(EMAIL))
+		.andExpect(jsonPath("$.dob").exists());
+		
+		verify(patientService, times(1)).updatePassword(any(UpdatePasswordDto.class), anyLong());
 	}
 
 }
