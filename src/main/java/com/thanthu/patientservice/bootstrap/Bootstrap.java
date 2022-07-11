@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.thanthu.patientservice.enums.RoleName;
@@ -26,8 +25,6 @@ public class Bootstrap implements CommandLineRunner {
 	
 	private final RoleRepository roleRepository;
 	
-	private final PasswordEncoder passwordEncoder;
-
 	@Override
 	public void run(String... args) throws Exception {
 		
@@ -44,7 +41,6 @@ public class Bootstrap implements CommandLineRunner {
 				.lastName("Patient")
 				.dob(LocalDate.of(2000, 12, 12))
 				.email("thanthu@test.com")
-				.password(passwordEncoder.encode("password"))
 				.roles(Stream.of(createPatientRole).collect(Collectors.toSet()))
 				.build();
 		
@@ -55,7 +51,6 @@ public class Bootstrap implements CommandLineRunner {
 				.lastName("Doe")
 				.dob(LocalDate.of(2000, 12, 12))
 				.email("johndoe@test.com")
-				.password(passwordEncoder.encode("johnspassword"))
 				.roles(Stream.of(patientRole).collect(Collectors.toSet()))
 				.build();
 		

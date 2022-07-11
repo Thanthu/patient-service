@@ -28,7 +28,6 @@ class PatientToPatientDtoConverterTest {
 	private static final LocalDate DATE = LocalDate.now();
 	private static final LocalDateTime DATE_TIME = LocalDateTime.now();
 	private static final String EMAIL = "test@test.com";
-	private static final String PASSWORD = "password";
 	
 	private PatientToPatientDtoConverter converter;
 
@@ -51,7 +50,6 @@ class PatientToPatientDtoConverterTest {
 				.createdDateTime(DATE_TIME)
 				.updateDateTime(DATE_TIME)
 				.email(EMAIL)
-				.password(PASSWORD)
 				.roles(roles)
 				.build();
 		PatientDto patientDto = converter.convert(patient);
@@ -63,7 +61,6 @@ class PatientToPatientDtoConverterTest {
 		assertEquals(patient.getCreatedDateTime(), patientDto.getCreatedDateTime());
 		assertEquals(patient.getUpdateDateTime(), patientDto.getUpdateDateTime());
 		assertEquals(patient.getEmail(), patientDto.getEmail());
-		assertNull(patientDto.getPassword());
 		assertEquals(2, patientDto.getRoles().size());
 	}
 	

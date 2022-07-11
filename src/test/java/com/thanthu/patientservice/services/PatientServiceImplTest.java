@@ -1,7 +1,6 @@
 package com.thanthu.patientservice.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -23,13 +22,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.thanthu.patientservice.converters.PatientDtoToPatientConverter;
 import com.thanthu.patientservice.converters.PatientToPatientDtoConverter;
 import com.thanthu.patientservice.dtos.PatientDto;
-import com.thanthu.patientservice.dtos.UpdatePasswordDto;
 import com.thanthu.patientservice.models.Patient;
 import com.thanthu.patientservice.repositories.PatientRepository;
 
@@ -42,13 +38,9 @@ class PatientServiceImplTest {
 	private static final LocalDate DATE = LocalDate.now();
 	private static final LocalDateTime DATE_TIME = LocalDateTime.now();
 	private static final String EMAIL = "test@test.com";
-	private static final String PASSWORD = "password";
 	
 	@Spy
-	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-	
-	@Spy
-	private PatientDtoToPatientConverter patientDtoToPatientConverter = new PatientDtoToPatientConverter(passwordEncoder);
+	private PatientDtoToPatientConverter patientDtoToPatientConverter = new PatientDtoToPatientConverter();
 	
 	@Spy
 	private PatientToPatientDtoConverter patientToPatientDtoConverter;
@@ -69,7 +61,6 @@ class PatientServiceImplTest {
 				.lastName(LAST_NAME)
 				.dob(DATE)
 				.email(EMAIL)
-				.password(PASSWORD)
 				.build();
 		
 		patient = Patient.builder()
@@ -77,7 +68,6 @@ class PatientServiceImplTest {
 				.lastName(LAST_NAME)
 				.dob(DATE)
 				.email(EMAIL)
-				.password(passwordEncoder.encode(PASSWORD))
 				.createdDateTime(DATE_TIME)
 				.updateDateTime(DATE_TIME).build();
 	}
@@ -206,26 +196,4 @@ class PatientServiceImplTest {
 		assertEquals(updatedEmail, savedPatientDto.getEmail());
 	}
 	
-	@Test
-	void testUpdatePassword() {
-		String newPassword = "newPassword";
-		UpdatePasswordDto updatePasswordDto = UpdatePasswordDto.builder().newPassword(newPassword).currentPassword(PASSWORD).build();
-		
-		Optional<Patient> patientOptional = Optional.of(patient);
-		
-		when(patientRepository.findById(ID)).thenReturn(patientOptional);
-		when(patientRepository.save(any(Patient.class))).then(returnsFirstArg());
-		
-		PatientDto savedPatientDto = patientService.updatePassword(updatePasswordDto, ID);
-		
-		verify(patientRepository, times(1)).findById(ID);
-		verify(patientRepository, times(1)).save(any());
-		
-		assertTrue(passwordEncoder.matches(newPassword, patient.getPassword()));
-		assertEquals(FIRST_NAME, savedPatientDto.getFirstName());
-		assertEquals(LAST_NAME, savedPatientDto.getLastName());
-		assertEquals(DATE, savedPatientDto.getDob());
-		assertEquals(EMAIL, savedPatientDto.getEmail());
-	}
-
 }

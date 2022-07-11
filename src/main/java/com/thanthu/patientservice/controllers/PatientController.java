@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.thanthu.patientservice.dtos.PatientDto;
-import com.thanthu.patientservice.dtos.UpdatePasswordDto;
 import com.thanthu.patientservice.services.PatientService;
 import com.thanthu.patientservice.validation.groups.OnCreatePatient;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientDob;
@@ -75,9 +74,4 @@ public class PatientController {
 		return patientService.updateEmail(patientDto);
 	}
 	
-	@PutMapping("/{id}/password")
-	public PatientDto updateEmail(@Valid @RequestBody UpdatePasswordDto updatePasswordDto, @PathVariable Long id) {
-		return patientService.updatePassword(updatePasswordDto, id);
-	}
-
 }

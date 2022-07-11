@@ -66,10 +66,6 @@ public class Patient {
 	@Column(nullable = false, unique = true)
 	private String email;
 	
-	@NotNull
-	@Column(nullable = false, length = 500)
-	private String password;
-	
 	@ToString.Exclude
 	@Builder.Default
 	@ManyToMany(fetch = FetchType.EAGER)

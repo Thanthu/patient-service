@@ -10,8 +10,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
-import org.hibernate.validator.constraints.Length;
-
 import com.thanthu.patientservice.enums.RoleName;
 import com.thanthu.patientservice.validation.groups.OnCreatePatient;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientDob;
@@ -49,10 +47,6 @@ public class PatientDto {
 	@Email
 	private String email;
 
-	@NotBlank(groups = { OnCreatePatient.class })
-	@Length(min = 8, max = 16)
-	private String password;
-	
 	private Set<RoleName> roles = new HashSet<>();
 
 }
