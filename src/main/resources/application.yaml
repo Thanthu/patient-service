@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: patient
+  profiles:
+    active:
+    - default
+  config:
+    import:
+    - configserver:http://localhost:8082
