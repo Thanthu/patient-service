@@ -5,7 +5,6 @@ import java.util.Arrays;
 import javax.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -85,13 +84,6 @@ public class GlobalRestApiExceptionHandler {
 	public ErrorResponseDto handler(BadRequestException e) {
 		log.error(e.getMessage(), e);
 		return ErrorResponseDto.builder().code(400).messages(Arrays.asList(e.getMessage())).build();
-	}
-	
-	@ExceptionHandler(AuthenticationServiceException.class)
-	@ResponseStatus(code = HttpStatus.UNAUTHORIZED)
-	public ErrorResponseDto handler(AuthenticationServiceException e) {
-		log.error(e.getMessage(), e);
-		return ErrorResponseDto.builder().code(401).messages(Arrays.asList(e.getMessage())).build();
 	}
 	
 }

@@ -15,8 +15,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.security.core.GrantedAuthority;
-
 import com.thanthu.patientservice.enums.RoleName;
 
 import lombok.AllArgsConstructor;
@@ -36,7 +34,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @Table(name = "roles")
-public class Role implements GrantedAuthority {
+public class Role {
 	
 	private static final long serialVersionUID = 1434637621826381419L;
 
@@ -55,7 +53,7 @@ public class Role implements GrantedAuthority {
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
 	private Set<Patient> patients = new HashSet<>();
 
-	@Override
+	//@Override
 	public String getAuthority() {
 		return roleName.name();
 	}
