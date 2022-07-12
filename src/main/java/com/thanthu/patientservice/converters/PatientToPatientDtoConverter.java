@@ -24,6 +24,8 @@ public class PatientToPatientDtoConverter implements Converter<Patient, PatientD
 				.updateDateTime(patient.getUpdateDateTime())
 				.email(patient.getEmail())
 				.roles(patient.getRoles().stream().map(role -> role.getRoleName()).collect(Collectors.toSet()))
+				.doctorId(patient.getDoctorId())
+				.practiceId(patient.getPracticeId())
 				.build();
 	}
 

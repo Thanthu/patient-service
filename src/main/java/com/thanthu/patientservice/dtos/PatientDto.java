@@ -48,5 +48,9 @@ public class PatientDto {
 	private String email;
 
 	private Set<RoleName> roles = new HashSet<>();
+	
+	private Long doctorId;
+	
+	private Long practiceId;
 
 }

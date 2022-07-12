@@ -72,4 +72,8 @@ public class Patient {
 	@JoinTable(name = "patient_roles", joinColumns = @JoinColumn(name = "patient_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<Role>();
 	
+	private Long doctorId;
+	
+	private Long practiceId;
+	
 }

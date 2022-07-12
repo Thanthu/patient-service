@@ -21,6 +21,8 @@ public class PatientDtoToPatientConverter implements Converter<PatientDto, Patie
 				.lastName(patientDto.getLastName())
 				.dob(patientDto.getDob())
 				.email(patientDto.getEmail())
+				.doctorId(patientDto.getDoctorId())
+				.practiceId(patientDto.getPracticeId())
 				.build();
 	}
 
