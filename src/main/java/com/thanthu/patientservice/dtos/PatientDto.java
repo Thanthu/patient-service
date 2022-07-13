@@ -47,10 +47,11 @@ public class PatientDto {
 	@Email
 	private String email;
 
+	@Builder.Default
 	private Set<RoleName> roles = new HashSet<>();
 	
 	private Long doctorId;
 	
 	private Long practiceId;
-
+	
 }

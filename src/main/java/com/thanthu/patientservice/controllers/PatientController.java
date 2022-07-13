@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.dtos.clients.org.PracticeDto;
+import com.thanthu.patientservice.dtos.clients.org.UserDto;
 import com.thanthu.patientservice.services.PatientService;
 import com.thanthu.patientservice.validation.groups.OnCreatePatient;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientDob;
@@ -31,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class PatientController {
 
 	private final PatientService patientService;
-
+	
 	@PostMapping
 	@Validated(OnCreatePatient.class)
 	public PatientDto createPatient(@Valid @RequestBody PatientDto patientDto) {
@@ -72,6 +74,26 @@ public class PatientController {
 	public PatientDto updateEmail(@Valid @RequestBody PatientDto patientDto, @PathVariable Long id) {
 		patientDto.setId(id);
 		return patientService.updateEmail(patientDto);
+	}
+	
+	@GetMapping("/{id}/doctor")
+	public UserDto getDoctor(@PathVariable Long id) {
+		return patientService.getDoctor(id);
+	}
+	
+	@GetMapping("/{id}/practice")
+	public PracticeDto getPractice(@PathVariable Long id) {
+		return patientService.getPractice(id);
+	}
+	
+	@GetMapping("/list-by-doctor")
+	public Set<PatientDto> listPatientsByDoctor(@RequestParam(required = true) Long doctorId) {
+		return patientService.findPatientsByDoctor(doctorId);
+	}
+	
+	@GetMapping("/list-by-practice")
+	public Set<PatientDto> listPatientsByPractice(@RequestParam(required = true) Long practiceId) {
+		return patientService.findPatientsByPractice(practiceId);
 	}
 	
 }

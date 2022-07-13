@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import com.thanthu.patientservice.converters.PatientDtoToPatientConverter;
 import com.thanthu.patientservice.converters.PatientToPatientDtoConverter;
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.dtos.clients.org.PracticeDto;
+import com.thanthu.patientservice.dtos.clients.org.UserDto;
 import com.thanthu.patientservice.exceptions.BadRequestException;
 import com.thanthu.patientservice.exceptions.NotFoundException;
 import com.thanthu.patientservice.models.Patient;
@@ -25,6 +27,8 @@ public class PatientServiceImpl implements PatientService {
 	private final PatientToPatientDtoConverter patientToPatientDtoConverter;
 
 	private final PatientRepository patientRepository;
+	
+	private final OrgService orgService;
 	
 	@Override
 	public PatientDto createPatient(PatientDto patientDto) {
@@ -96,6 +100,30 @@ public class PatientServiceImpl implements PatientService {
 		patient.setEmail(patientDto.getEmail());
 		Patient savedPatient = savePatient(patient);
 		return patientToPatientDtoConverter.convert(savedPatient);
+	}
+
+	@Override
+	public UserDto getDoctor(Long id) {
+		Patient patient = findById(id);
+		return orgService.findUserById(patient.getDoctorId(), false, false);
+	}
+
+	@Override
+	public PracticeDto getPractice(Long id) {
+		Patient patient = findById(id);
+		return orgService.findPracticeById(patient.getPracticeId(), false, false);
+	}
+
+	@Override
+	public Set<PatientDto> findPatientsByDoctor(Long doctorId) {
+		List<Patient> patients = patientRepository.findAllByDoctorId(doctorId);
+		return convertPatientsToPatientDtos(patients);
+	}
+
+	@Override
+	public Set<PatientDto> findPatientsByPractice(Long practiceId) {
+		List<Patient> patients = patientRepository.findAllByPracticeId(practiceId);
+		return convertPatientsToPatientDtos(patients);
 	}
 	
 }

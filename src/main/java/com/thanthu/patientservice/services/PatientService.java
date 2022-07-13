@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.thanthu.patientservice.dtos.PatientDto;
+import com.thanthu.patientservice.dtos.clients.org.PracticeDto;
+import com.thanthu.patientservice.dtos.clients.org.UserDto;
 
 public interface PatientService {
 
@@ -20,5 +22,13 @@ public interface PatientService {
 	public PatientDto findPatientById(Long id);
 
 	public PatientDto updateEmail(PatientDto patientDto);
+
+	public UserDto getDoctor(Long id);
+
+	public PracticeDto getPractice(Long id);
+
+	public Set<PatientDto> findPatientsByDoctor(Long doctorId);
+
+	public Set<PatientDto> findPatientsByPractice(Long practiceId);
 
 }
