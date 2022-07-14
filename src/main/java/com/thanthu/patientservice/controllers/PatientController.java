@@ -24,6 +24,7 @@ import com.thanthu.patientservice.validation.groups.OnUpdatePatientDob;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientEmail;
 import com.thanthu.patientservice.validation.groups.OnUpdatePatientName;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -76,11 +77,13 @@ public class PatientController {
 		return patientService.updateEmail(patientDto);
 	}
 	
+	@CircuitBreaker(name = "patientControllerGetDoctor")
 	@GetMapping("/{id}/doctor")
 	public UserDto getDoctor(@PathVariable Long id) {
 		return patientService.getDoctor(id);
 	}
 	
+	@CircuitBreaker(name = "patientControllerGetPractice")
 	@GetMapping("/{id}/practice")
 	public PracticeDto getPractice(@PathVariable Long id) {
 		return patientService.getPractice(id);
